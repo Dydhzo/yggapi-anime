@@ -72,30 +72,8 @@ app = FastAPI(
 )
 
 # Monter les fichiers statiques et templates
-import os
-
-# Déterminer les chemins absolus pour Docker
-base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-static_dir = os.path.join(base_dir, "src", "static")
-templates_dir = os.path.join(base_dir, "src", "templates")
-
-# Vérifier que les répertoires existent
-if not os.path.exists(static_dir):
-    logger.error(f"❌ Répertoire static introuvable: {static_dir}")
-if not os.path.exists(templates_dir):
-    logger.error(f"❌ Répertoire templates introuvable: {templates_dir}")
-
-try:
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
-    logger.info(f"✅ Fichiers statiques montés depuis: {static_dir}")
-except Exception as e:
-    logger.error(f"❌ Erreur montage static: {e}")
-
-try:
-    templates = Jinja2Templates(directory=templates_dir)
-    logger.info(f"✅ Templates chargés depuis: {templates_dir}")
-except Exception as e:
-    logger.error(f"❌ Erreur chargement templates: {e}")
+app.mount("/static", StaticFiles(directory="src/static"), name="static")
+templates = Jinja2Templates(directory="src/templates")
 
 # Gestionnaire de connexions WebSocket
 class ConnectionManager:
@@ -130,39 +108,13 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
 async def dashboard(request: Request):
     """Page principale du dashboard"""
-    try:
-        # Utiliser index.html au lieu de dashboard.html
-        return templates.TemplateResponse("index.html", {
-            "request": request,
-            "version": get_version()
-        })
-    except Exception as e:
-        logger.error(f"❌ Erreur affichage interface: {e}")
-        # Retourner une page d'erreur simple pour debug
-        return HTMLResponse(f"""
-        <!DOCTYPE html>
-        <html>
-        <head><title>Erreur</title></head>
-        <body style='background:#111;color:#fff;padding:50px;font-family:monospace'>
-            <h1>❌ Erreur Interface</h1>
-            <p>L'interface ne peut pas être affichée.</p>
-            <p>Erreur: {str(e)}</p>
-            <hr>
-            <p>Static dir: {static_dir if 'static_dir' in locals() else 'undefined'}</p>
-            <p>Templates dir: {templates_dir if 'templates_dir' in locals() else 'undefined'}</p>
-            <hr>
-            <h2>API Endpoints disponibles:</h2>
-            <ul>
-                <li><a href='/api/info' style='color:#4af'>/api/info</a> - Informations système</li>
-                <li><a href='/api/stats' style='color:#4af'>/api/stats</a> - Statistiques</li>
-                <li><a href='/health' style='color:#4af'>/health</a> - Health check</li>
-            </ul>
-        </body>
-        </html>
-        """)
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "version": get_version()
+    })
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -287,22 +239,61 @@ async def get_films(
 async def trigger_scrape():
     """Déclencher manuellement une mise à jour de scraping"""
     try:
+        # Envoyer notification de début via WebSocket
+        await manager.broadcast({
+            "type": "scraping_started",
+            "message": "Vérification des nouveautés en cours..."
+        })
+        
         scraper = YggScraper()
         await scraper.update_scrape()
+        
+        # Envoyer notification de fin
+        await manager.broadcast({
+            "type": "scraping_completed",
+            "message": "Vérification terminée"
+        })
+        
         return {"message": "Scraping déclenché avec succès", "timestamp": datetime.now().isoformat()}
     except Exception as e:
         logger.error(f"Erreur lors du déclenchement du scraping: {e}")
+        await manager.broadcast({
+            "type": "error",
+            "message": f"Erreur: {str(e)}"
+        })
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/scrape/initial")
 async def trigger_initial_scrape():
     """Déclencher manuellement le scraping initial complet (utiliser avec prudence !)"""
     try:
+        # Envoyer notification de début via WebSocket
+        await manager.broadcast({
+            "type": "scraping_started",
+            "message": "Scraping initial en cours. Cela peut prendre plusieurs minutes..."
+        })
+        
         scraper = YggScraper()
         await scraper.initial_scrape()
+        
+        # Démarrer le scheduler automatique après le scraping initial
+        if not scheduler.is_running:
+            scheduler.start()
+            logger.info("✅ Scheduler démarré - Vérifications automatiques toutes les heures")
+        
+        # Envoyer notification de fin
+        await manager.broadcast({
+            "type": "scraping_completed",
+            "message": "Scraping initial terminé - Vérifications automatiques activées"
+        })
+        
         return {"message": "Scraping initial déclenché avec succès", "timestamp": datetime.now().isoformat()}
     except Exception as e:
         logger.error(f"Erreur lors du déclenchement du scraping initial: {e}")
+        await manager.broadcast({
+            "type": "error",
+            "message": f"Erreur: {str(e)}"
+        })
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/scraping-state")

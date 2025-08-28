@@ -76,7 +76,20 @@ html, body {
 }
 
 .logo-icon {
-    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 6px;
+    color: white;
+}
+
+.logo-icon svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2;
 }
 
 .logo-text {
@@ -144,9 +157,81 @@ html, body {
     }
 }
 
+@media (max-width: 480px) {
+    .export-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .tab-navigation {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .tab-button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .table-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .modal-box {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .alert-container {
+        left: 20px;
+        right: 20px;
+        top: 80px;
+    }
+    
+    .alert-box {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .status-badge {
+        font-size: 11px;
+        padding: 4px 8px;
+    }
+    
+    .logo-text {
+        font-size: 16px;
+    }
+    
+    .version-badge {
+        font-size: 10px;
+    }
+}
+
 @media (max-width: 768px) {
     .dashboard-layout {
         grid-template-columns: 1fr;
+    }
+    
+    .main-content {
+        padding: 16px;
+    }
+    
+    .header-bar {
+        padding: 0 16px;
+    }
+    
+    .button-group {
+        flex-direction: column;
+    }
+    
+    .button {
+        justify-content: center;
+    }
+    
+    .stat-number {
+        font-size: 24px;
     }
 }
 
@@ -154,11 +239,12 @@ html, body {
 .stat-widget {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 20px;
-    transition: all 0.2s ease;
+    border-radius: 12px;
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     position: relative;
     overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .stat-widget::before {
@@ -179,7 +265,8 @@ html, body {
 
 .stat-widget:hover {
     border-color: var(--border-light);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .stat-label {
@@ -209,9 +296,10 @@ html, body {
 .action-panel {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 24px;
+    border-radius: 12px;
+    padding: 28px;
     margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .panel-heading {
@@ -220,7 +308,22 @@ html, body {
     margin-bottom: 20px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 12px;
+}
+
+.panel-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--primary);
+}
+
+.panel-icon svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
 }
 
 .button-group {
@@ -243,6 +346,14 @@ html, body {
     gap: 8px;
     position: relative;
     overflow: hidden;
+    min-height: 40px;
+}
+
+.button svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+    flex-shrink: 0;
 }
 
 .button:disabled {
@@ -257,7 +368,8 @@ html, body {
 
 .button-primary:hover:not(:disabled) {
     background: var(--primary-dark);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
 }
 
 .button-success {
@@ -310,24 +422,39 @@ html, body {
 .export-card {
     background: var(--bg-elevated);
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 16px;
+    border-radius: 10px;
+    padding: 20px;
     text-align: center;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     text-decoration: none;
     color: inherit;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .export-card:hover {
     background: var(--bg-hover);
     border-color: var(--primary);
-    transform: scale(1.05);
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
 }
 
-.export-emoji {
-    font-size: 32px;
-    margin-bottom: 8px;
+.export-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    background: linear-gradient(135deg, var(--primary-light), var(--primary));
+    border-radius: 8px;
+    color: white;
+}
+
+.export-icon svg {
+    width: 24px;
+    height: 24px;
+    stroke-width: 2;
 }
 
 .export-title {
@@ -367,10 +494,20 @@ html, body {
     border: none;
     color: var(--text-secondary);
     cursor: pointer;
-    border-radius: 4px;
+    border-radius: 6px;
     transition: all 0.2s;
     font-size: 14px;
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.tab-button svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+    flex-shrink: 0;
 }
 
 .tab-button:hover {
@@ -469,10 +606,22 @@ html, body {
 .modal-box {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
+    border-radius: 16px;
     width: 90%;
-    max-width: 480px;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    animation: modalSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .modal-head {
@@ -549,6 +698,40 @@ html, body {
     color: var(--info);
 }
 
+/* SVG Icon Animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.button:disabled svg {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.export-card:hover .export-icon {
+    transform: scale(1.1);
+    transition: transform 0.2s ease;
+}
+
+.panel-icon:hover svg {
+    color: var(--primary-light);
+    transform: rotate(5deg);
+    transition: all 0.2s ease;
+}
+
+/* Status Icons */
+.status-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.status-icon svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+}
+
 /* Loading Spinner */
 .spinner {
     width: 16px;
@@ -561,4 +744,27 @@ html, body {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Responsive SVG Icons */
+@media (max-width: 768px) {
+    .logo-icon {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .logo-icon svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .export-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .export-icon svg {
+        width: 20px;
+        height: 20px;
+    }
 }

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>YGG Anime Scraper - Professional Dashboard</title>
+    <title>YGGAPI-ANIME - Dashboard</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -12,8 +12,13 @@
         <header class="header-bar">
             <div class="header-content">
                 <div class="logo-section">
-                    <span class="logo-icon">🎌</span>
-                    <span class="logo-text">YGG Anime Scraper</span>
+                    <span class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+                            <line x1="4" y1="22" x2="4" y2="15"/>
+                        </svg>
+                    </span>
+                    <span class="logo-text">YGGAPI-ANIME</span>
                     <span class="version-badge">v{{ version }}</span>
                 </div>
                 <div class="status-badge">
@@ -67,18 +72,38 @@
             <!-- Control Actions -->
             <div class="action-panel">
                 <h2 class="panel-heading">
-                    <span>⚙️</span>
+                    <span class="panel-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
+                        </svg>
+                    </span>
                     Contrôles du Système
                 </h2>
                 <div class="button-group">
                     <button id="check-now-btn" class="button button-primary">
-                        🔄 Vérifier Maintenant
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <polyline points="23 4 23 10 17 10"/>
+                            <polyline points="1 20 1 14 7 14"/>
+                            <path d="m20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                        </svg>
+                        Vérifier Maintenant
                     </button>
                     <button id="initial-scrape-btn" class="button button-warning">
-                        ⚠️ Scraping Initial Complet
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+                            <path d="m9 9 2 3 4-6"/>
+                        </svg>
+                        Scraping Initial Complet
                     </button>
                     <button id="refresh-btn" class="button button-secondary">
-                        🔃 Rafraîchir les Stats
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+                            <path d="M3 21v-5h5"/>
+                        </svg>
+                        Rafraîchir les Stats
                     </button>
                 </div>
 
@@ -97,27 +122,59 @@
             <!-- Export Options -->
             <div class="export-panel">
                 <h2 class="panel-heading">
-                    <span>💾</span>
+                    <span class="panel-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                    </span>
                     Export Base de Données Complète
                 </h2>
                 <div class="export-options">
                     <a href="/api/export/sql" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export SQL en cours...')">
-                        <div class="export-emoji">🗄️</div>
+                        <div class="export-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                <path d="m3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+                                <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/>
+                            </svg>
+                        </div>
                         <div class="export-title">SQL</div>
                         <div class="export-subtitle">PostgreSQL Ready</div>
                     </a>
                     <a href="/api/export/json" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export JSON en cours...')">
-                        <div class="export-emoji">📋</div>
+                        <div class="export-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14,2 14,8 20,8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10,9 9,9 8,9"/>
+                            </svg>
+                        </div>
                         <div class="export-title">JSON</div>
                         <div class="export-subtitle">Format Portable</div>
                     </a>
                     <a href="/api/export/csv" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export CSV en cours...')">
-                        <div class="export-emoji">📊</div>
+                        <div class="export-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M3 3v18h18"/>
+                                <path d="m19 9-5 5-4-4-3 3"/>
+                            </svg>
+                        </div>
                         <div class="export-title">CSV</div>
                         <div class="export-subtitle">Excel Compatible</div>
                     </a>
                     <a href="/api/export/all" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export complet en cours...')">
-                        <div class="export-emoji">📦</div>
+                        <div class="export-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect width="16" height="13" x="6" y="4" rx="2"/>
+                                <path d="m22 7-8-4-8 4"/>
+                                <path d="m2 7 8 4 8-4"/>
+                                <path d="m6 4 8 4 8-4"/>
+                            </svg>
+                        </div>
                         <div class="export-title">ZIP Complet</div>
                         <div class="export-subtitle">Tous Formats</div>
                     </a>
@@ -128,9 +185,35 @@
             <div class="table-section">
                 <div class="table-header">
                     <div class="tab-navigation">
-                        <button class="tab-button active" data-table="series">📺 Séries</button>
-                        <button class="tab-button" data-table="films">🎬 Films</button>
-                        <button class="tab-button" data-table="state">📊 État du Système</button>
+                        <button class="tab-button active" data-table="series">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect width="20" height="15" x="2" y="3" rx="2" ry="2"/>
+                                <line x1="8" y1="21" x2="16" y2="21"/>
+                                <line x1="12" y1="17" x2="12" y2="21"/>
+                            </svg>
+                            Séries
+                        </button>
+                        <button class="tab-button" data-table="films">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect width="20" height="20" x="2" y="2" rx="2.18" ry="2.18"/>
+                                <line x1="7" y1="2" x2="7" y2="22"/>
+                                <line x1="17" y1="2" x2="17" y2="22"/>
+                                <line x1="2" y1="12" x2="22" y2="12"/>
+                                <line x1="2" y1="7" x2="7" y2="7"/>
+                                <line x1="2" y1="17" x2="7" y2="17"/>
+                                <line x1="17" y1="17" x2="22" y2="17"/>
+                                <line x1="17" y1="7" x2="22" y2="7"/>
+                            </svg>
+                            Films
+                        </button>
+                        <button class="tab-button" data-table="state">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <circle cx="18" cy="6" r="3"/>
+                                <circle cx="6" cy="18" r="3"/>
+                                <path d="m13 6 3 7-3 7-7-3 7-3-7-3 7-3Z"/>
+                            </svg>
+                            État du Système
+                        </button>
                     </div>
                     <div>
                         <span id="table-info" style="color: var(--text-secondary); font-size: 13px;">Chargement...</span>
@@ -419,8 +502,8 @@
                     ? new Date(item.last_scrape_time).toLocaleString('fr-FR')
                     : 'Jamais';
                 const status = item.initial_scrape_completed 
-                    ? '<span style="color: var(--success)">✅ Terminé</span>'
-                    : '<span style="color: var(--warning)">⏳ En attente</span>';
+                    ? '<span style="color: var(--success)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="display: inline"><polyline points="20 6 9 17 4 12"/></svg> Terminé</span>'
+                    : '<span style="color: var(--warning)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" style="display: inline"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> En attente</span>';
 
                 html += `<tr>
                     <td>${item.category === 'series' ? 'Séries Anime' : 'Films Anime'}</td>
@@ -520,8 +603,14 @@
             const container = document.getElementById('alerts');
             const alert = document.createElement('div');
             alert.className = `alert-box alert-${type}`;
+            const iconSvg = type === 'error' 
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'
+                : type === 'success'
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+            
             alert.innerHTML = `
-                <span>${type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'}</span>
+                <span>${iconSvg}</span>
                 <span>${message}</span>
             `;
             container.appendChild(alert);

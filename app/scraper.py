@@ -35,7 +35,8 @@ class YggScraper:
         self, 
         torrents: List[Dict[str, Any]], 
         category_type: str,
-        db: Session
+        db: Session,
+        broadcast_updates: bool = True
     ):
         """Sauvegarder les torrents en base de données"""
         Model = AnimeSeriesModel if category_type == 'series' else AnimeFilmModel
@@ -83,6 +84,32 @@ class YggScraper:
         try:
             db.commit()
             logger.info(f"{saved_count} nouveaux torrents sauvegardés, {updated_count} torrents existants mis à jour pour {category_type}")
+            
+            # Envoyer une mise à jour temps réel via WebSocket
+            if broadcast_updates and (saved_count > 0 or updated_count > 0):
+                try:
+                    # Import tardif pour éviter les imports circulaires
+                    from app.main import manager
+                    import asyncio
+                    
+                    # Compter le total actuel
+                    total_count = db.query(Model).count()
+                    
+                    # Créer le message de mise à jour
+                    update_message = {
+                        "type": "scraping_progress",
+                        "category": category_type,
+                        "new_count": saved_count,
+                        "updated_count": updated_count,
+                        "total_count": total_count,
+                        "message": f"{saved_count} nouveaux torrents {category_type}"
+                    }
+                    
+                    # Envoyer l'update à tous les clients connectés
+                    asyncio.create_task(manager.broadcast(update_message))
+                except Exception as e:
+                    logger.debug(f"Impossible d'envoyer update WebSocket: {e}")
+                    
         except Exception as e:
             db.rollback()
             logger.error(f"Erreur lors du commit des torrents: {e}")
