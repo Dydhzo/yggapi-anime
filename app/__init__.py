@@ -1,0 +1,1 @@
+# YGG API Anime Scraper Package

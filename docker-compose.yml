@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  yggapi-anime:
+    image: yggapi-anime:latest
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-password}
+      - DB_HOST=${DB_HOST:-localhost}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_NAME=${DB_NAME:-yggapi_anime}
+      - YGG_API_BASE_URL=${YGG_API_BASE_URL:-https://yggapi.eu}
+      - API_DELAY_SECONDS=${API_DELAY_SECONDS:-1}
+      - UPDATE_INTERVAL_SECONDS=${UPDATE_INTERVAL_SECONDS:-3600}
+      - ANIME_SERIES_CATEGORY=${ANIME_SERIES_CATEGORY:-2179}
+      - ANIME_FILM_CATEGORY=${ANIME_FILM_CATEGORY:-2178}
+      - ITEMS_PER_PAGE=${ITEMS_PER_PAGE:-100}
