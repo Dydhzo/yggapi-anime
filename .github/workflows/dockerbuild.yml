@@ -35,6 +35,8 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
           tags: |
             ghcr.io/dydhzo/yggapi-anime:${{ steps.get-version.outputs.VERSION }}
             ghcr.io/dydhzo/yggapi-anime:latest
