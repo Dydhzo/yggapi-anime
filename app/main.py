@@ -46,12 +46,13 @@ async def lifespan(app: FastAPI):
     # Initialiser la base de données
     init_database()
     
-    # Effectuer un scraping initial si nécessaire
-    scraper = YggScraper()
-    await scraper.run_once()
+    # NE PAS effectuer de scraping automatique au démarrage
+    # Le scraping doit être déclenché manuellement depuis l'interface
+    # scraper = YggScraper()
+    # await scraper.run_once()
     
-    # Démarrer le scheduler pour les mises à jour périodiques
-    scheduler.start()
+    # NE PAS démarrer le scheduler automatiquement
+    # scheduler.start()
     
     logger.info("Application démarrée avec succès !")
     
@@ -71,8 +72,30 @@ app = FastAPI(
 )
 
 # Monter les fichiers statiques et templates
-app.mount("/static", StaticFiles(directory="src/static"), name="static")
-templates = Jinja2Templates(directory="src/templates")
+import os
+
+# Déterminer les chemins absolus pour Docker
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+static_dir = os.path.join(base_dir, "src", "static")
+templates_dir = os.path.join(base_dir, "src", "templates")
+
+# Vérifier que les répertoires existent
+if not os.path.exists(static_dir):
+    logger.error(f"❌ Répertoire static introuvable: {static_dir}")
+if not os.path.exists(templates_dir):
+    logger.error(f"❌ Répertoire templates introuvable: {templates_dir}")
+
+try:
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    logger.info(f"✅ Fichiers statiques montés depuis: {static_dir}")
+except Exception as e:
+    logger.error(f"❌ Erreur montage static: {e}")
+
+try:
+    templates = Jinja2Templates(directory=templates_dir)
+    logger.info(f"✅ Templates chargés depuis: {templates_dir}")
+except Exception as e:
+    logger.error(f"❌ Erreur chargement templates: {e}")
 
 # Gestionnaire de connexions WebSocket
 class ConnectionManager:
@@ -110,10 +133,36 @@ manager = ConnectionManager()
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Page principale du dashboard"""
-    return templates.TemplateResponse("dashboard.html", {
-        "request": request,
-        "version": get_version()
-    })
+    try:
+        # Utiliser index.html au lieu de dashboard.html
+        return templates.TemplateResponse("index.html", {
+            "request": request,
+            "version": get_version()
+        })
+    except Exception as e:
+        logger.error(f"❌ Erreur affichage interface: {e}")
+        # Retourner une page d'erreur simple pour debug
+        return HTMLResponse(f"""
+        <!DOCTYPE html>
+        <html>
+        <head><title>Erreur</title></head>
+        <body style='background:#111;color:#fff;padding:50px;font-family:monospace'>
+            <h1>❌ Erreur Interface</h1>
+            <p>L'interface ne peut pas être affichée.</p>
+            <p>Erreur: {str(e)}</p>
+            <hr>
+            <p>Static dir: {static_dir if 'static_dir' in locals() else 'undefined'}</p>
+            <p>Templates dir: {templates_dir if 'templates_dir' in locals() else 'undefined'}</p>
+            <hr>
+            <h2>API Endpoints disponibles:</h2>
+            <ul>
+                <li><a href='/api/info' style='color:#4af'>/api/info</a> - Informations système</li>
+                <li><a href='/api/stats' style='color:#4af'>/api/stats</a> - Statistiques</li>
+                <li><a href='/health' style='color:#4af'>/health</a> - Health check</li>
+            </ul>
+        </body>
+        </html>
+        """)
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

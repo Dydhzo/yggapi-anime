@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YGG Anime Scraper - Professional Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Fixed Header -->
+        <header class="header-bar">
+            <div class="header-content">
+                <div class="logo-section">
+                    <span class="logo-icon">🎌</span>
+                    <span class="logo-text">YGG Anime Scraper</span>
+                    <span class="version-badge">v{{ version }}</span>
+                </div>
+                <div class="status-badge">
+                    <span class="status-dot" id="connection-dot"></span>
+                    <span id="connection-text">Connexion...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content -->
+        <main class="main-content">
+            <!-- Statistics Dashboard -->
+            <div class="dashboard-layout">
+                <div class="stat-widget">
+                    <div class="stat-label">Séries Anime</div>
+                    <div class="stat-number" id="series-count">0</div>
+                    <div class="stat-details">
+                        <span>Dernier ID: <strong id="series-last-id">-</strong></span>
+                        <span>Mise à jour: <strong id="series-last-update">Jamais</strong></span>
+                    </div>
+                </div>
+
+                <div class="stat-widget">
+                    <div class="stat-label">Films Anime</div>
+                    <div class="stat-number" id="films-count">0</div>
+                    <div class="stat-details">
+                        <span>Dernier ID: <strong id="films-last-id">-</strong></span>
+                        <span>Mise à jour: <strong id="films-last-update">Jamais</strong></span>
+                    </div>
+                </div>
+
+                <div class="stat-widget">
+                    <div class="stat-label">Total Torrents</div>
+                    <div class="stat-number" id="total-count">0</div>
+                    <div class="stat-details">
+                        <span>État: <strong id="scraping-state">Inactif</strong></span>
+                        <span>Base: <strong>PostgreSQL</strong></span>
+                    </div>
+                </div>
+
+                <div class="stat-widget">
+                    <div class="stat-label">Prochaine Vérification</div>
+                    <div class="stat-number" id="next-check">--:--</div>
+                    <div class="stat-details">
+                        <span>Intervalle: <strong id="check-interval">1 heure</strong></span>
+                        <span>Auto: <strong id="scheduler-status">Actif</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Control Actions -->
+            <div class="action-panel">
+                <h2 class="panel-heading">
+                    <span>⚙️</span>
+                    Contrôles du Système
+                </h2>
+                <div class="button-group">
+                    <button id="check-now-btn" class="button button-primary">
+                        🔄 Vérifier Maintenant
+                    </button>
+                    <button id="initial-scrape-btn" class="button button-warning">
+                        ⚠️ Scraping Initial Complet
+                    </button>
+                    <button id="refresh-btn" class="button button-secondary">
+                        🔃 Rafraîchir les Stats
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div id="progress-section" class="progress-section">
+                    <div class="progress-header">
+                        <span id="progress-message">Initialisation...</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-track">
+                        <div id="progress-bar" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Export Options -->
+            <div class="export-panel">
+                <h2 class="panel-heading">
+                    <span>💾</span>
+                    Export Base de Données Complète
+                </h2>
+                <div class="export-options">
+                    <a href="/api/export/sql" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export SQL en cours...')">
+                        <div class="export-emoji">🗄️</div>
+                        <div class="export-title">SQL</div>
+                        <div class="export-subtitle">PostgreSQL Ready</div>
+                    </a>
+                    <a href="/api/export/json" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export JSON en cours...')">
+                        <div class="export-emoji">📋</div>
+                        <div class="export-title">JSON</div>
+                        <div class="export-subtitle">Format Portable</div>
+                    </a>
+                    <a href="/api/export/csv" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export CSV en cours...')">
+                        <div class="export-emoji">📊</div>
+                        <div class="export-title">CSV</div>
+                        <div class="export-subtitle">Excel Compatible</div>
+                    </a>
+                    <a href="/api/export/all" class="export-card" download onclick="window.scraperDashboard.showAlert('info', 'Export complet en cours...')">
+                        <div class="export-emoji">📦</div>
+                        <div class="export-title">ZIP Complet</div>
+                        <div class="export-subtitle">Tous Formats</div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Data Tables -->
+            <div class="table-section">
+                <div class="table-header">
+                    <div class="tab-navigation">
+                        <button class="tab-button active" data-table="series">📺 Séries</button>
+                        <button class="tab-button" data-table="films">🎬 Films</button>
+                        <button class="tab-button" data-table="state">📊 État du Système</button>
+                    </div>
+                    <div>
+                        <span id="table-info" style="color: var(--text-secondary); font-size: 13px;">Chargement...</span>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <div id="table-container">
+                        <div class="empty-state">
+                            Sélectionnez une table pour afficher les données
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Alert Container -->
+    <div class="alert-container" id="alerts"></div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h3 class="modal-heading" id="modal-title">Confirmation</h3>
+            </div>
+            <div class="modal-content" id="modal-body">
+                Êtes-vous sûr de vouloir continuer ?
+            </div>
+            <div class="modal-actions">
+                <button class="button button-secondary" id="modal-cancel">Annuler</button>
+                <button class="button button-danger" id="modal-confirm">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Professional Dashboard Controller
+    class AnimeScraperDashboard {
+        constructor() {
+            this.ws = null;
+            this.isScrapingActive = false;
+            this.currentTable = 'series';
+            this.initialize();
+        }
+
+        async initialize() {
+            this.connectWebSocket();
+            this.attachEventListeners();
+            await this.loadStatistics();
+            this.loadTable('series');
+            setInterval(() => this.updateClock(), 60000);
+        }
+
+        // WebSocket Management
+        connectWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            this.ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+
+            this.ws.onopen = () => {
+                this.updateConnectionStatus(true);
+                console.log('WebSocket connected');
+            };
+
+            this.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleRealtimeUpdate(data);
+                } catch (e) {
+                    console.error('WebSocket message error:', e);
+                }
+            };
+
+            this.ws.onclose = () => {
+                this.updateConnectionStatus(false);
+                setTimeout(() => this.connectWebSocket(), 3000);
+            };
+
+            this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                this.updateConnectionStatus(false);
+            };
+        }
+
+        updateConnectionStatus(connected) {
+            const dot = document.getElementById('connection-dot');
+            const text = document.getElementById('connection-text');
+            
+            if (connected) {
+                dot.classList.add('online');
+                text.textContent = 'Connecté';
+            } else {
+                dot.classList.remove('online');
+                text.textContent = 'Hors ligne';
+            }
+        }
+
+        handleRealtimeUpdate(data) {
+            switch(data.type) {
+                case 'scraping_started':
+                    this.startScrapingUI();
+                    this.showProgress(0, data.message);
+                    break;
+                case 'scraping_progress':
+                    this.updateProgress(data.progress, data.message);
+                    break;
+                case 'scraping_completed':
+                    this.stopScrapingUI();
+                    this.showAlert('success', 'Scraping terminé avec succès');
+                    this.loadStatistics();
+                    break;
+                case 'stats_update':
+                    this.updateStatistics(data.stats);
+                    break;
+                case 'error':
+                    this.showAlert('error', data.message);
+                    break;
+            }
+        }
+
+        // Statistics Management
+        async loadStatistics() {
+            try {
+                const response = await fetch('/api/stats');
+                if (!response.ok) throw new Error('Failed to load stats');
+                const data = await response.json();
+                this.updateStatistics(data);
+            } catch (error) {
+                console.error('Stats loading error:', error);
+                this.showAlert('error', 'Erreur lors du chargement des statistiques');
+            }
+        }
+
+        updateStatistics(stats) {
+            // Update counters
+            document.getElementById('series-count').textContent = 
+                (stats.anime_series?.total_count || 0).toLocaleString('fr-FR');
+            document.getElementById('films-count').textContent = 
+                (stats.anime_films?.total_count || 0).toLocaleString('fr-FR');
+            
+            const total = (stats.anime_series?.total_count || 0) + (stats.anime_films?.total_count || 0);
+            document.getElementById('total-count').textContent = total.toLocaleString('fr-FR');
+
+            // Update metadata
+            document.getElementById('series-last-id').textContent = 
+                stats.anime_series?.last_known_id || '-';
+            document.getElementById('films-last-id').textContent = 
+                stats.anime_films?.last_known_id || '-';
+
+            // Update timestamps
+            if (stats.anime_series?.last_scrape_time) {
+                const date = new Date(stats.anime_series.last_scrape_time);
+                document.getElementById('series-last-update').textContent = this.formatDate(date);
+            }
+
+            if (stats.anime_films?.last_scrape_time) {
+                const date = new Date(stats.anime_films.last_scrape_time);
+                document.getElementById('films-last-update').textContent = this.formatDate(date);
+            }
+
+            // Update scheduler info
+            if (stats.scheduler?.next_run) {
+                const next = new Date(stats.scheduler.next_run);
+                document.getElementById('next-check').textContent = 
+                    next.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'});
+            }
+
+            // Update button states
+            const initialComplete = stats.anime_series?.initial_scrape_completed && 
+                                  stats.anime_films?.initial_scrape_completed;
+            if (initialComplete && !this.isScrapingActive) {
+                document.getElementById('initial-scrape-btn').disabled = true;
+            }
+        }
+
+        formatDate(date) {
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            
+            if (minutes < 1) return 'À l\'instant';
+            if (minutes < 60) return `Il y a ${minutes} min`;
+            if (minutes < 1440) return `Il y a ${Math.floor(minutes / 60)}h`;
+            return date.toLocaleDateString('fr-FR', {day: 'numeric', month: 'short'});
+        }
+
+        // Table Management
+        async loadTable(type) {
+            const container = document.getElementById('table-container');
+            container.innerHTML = '<div class="empty-state">Chargement...</div>';
+
+            try {
+                let url;
+                switch(type) {
+                    case 'series':
+                        url = '/api/series?limit=50';
+                        break;
+                    case 'films':
+                        url = '/api/films?limit=50';
+                        break;
+                    case 'state':
+                        url = '/api/scraping-state';
+                        break;
+                }
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to load table');
+                const data = await response.json();
+                this.renderTable(type, data);
+            } catch (error) {
+                console.error('Table loading error:', error);
+                container.innerHTML = '<div class="empty-state">Erreur de chargement</div>';
+            }
+        }
+
+        renderTable(type, data) {
+            const container = document.getElementById('table-container');
+            
+            if (type === 'state') {
+                this.renderStateTable(data);
+                return;
+            }
+
+            const items = data.data || [];
+            if (items.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aucune donnée disponible</div>';
+                document.getElementById('table-info').textContent = '0 entrée';
+                return;
+            }
+
+            let html = `<table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Seeders</th>
+                        <th>Leechers</th>
+                        <th>Taille</th>
+                        <th>Upload</th>
+                        <th>Hash</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            items.forEach(item => {
+                const size = (item.size / 1073741824).toFixed(2);
+                const date = new Date(item.uploaded_at).toLocaleDateString('fr-FR');
+                const hash = item.hash ? item.hash.substring(0, 8) + '...' : '-';
+                
+                html += `<tr>
+                    <td>${item.id}</td>
+                    <td title="${this.escapeHtml(item.title)}">${this.escapeHtml(item.title.substring(0, 40))}...</td>
+                    <td>${item.seeders}</td>
+                    <td>${item.leechers}</td>
+                    <td>${size} GB</td>
+                    <td>${date}</td>
+                    <td>${hash}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            document.getElementById('table-info').textContent = `${items.length} entrées`;
+        }
+
+        renderStateTable(data) {
+            const container = document.getElementById('table-container');
+            
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="empty-state">Aucun état disponible</div>';
+                return;
+            }
+
+            let html = `<table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Catégorie</th>
+                        <th>Dernier ID</th>
+                        <th>Dernière Vérification</th>
+                        <th>Scraping Initial</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+            data.forEach(item => {
+                const lastCheck = item.last_scrape_time 
+                    ? new Date(item.last_scrape_time).toLocaleString('fr-FR')
+                    : 'Jamais';
+                const status = item.initial_scrape_completed 
+                    ? '<span style="color: var(--success)">✅ Terminé</span>'
+                    : '<span style="color: var(--warning)">⏳ En attente</span>';
+
+                html += `<tr>
+                    <td>${item.category === 'series' ? 'Séries Anime' : 'Films Anime'}</td>
+                    <td>${item.last_known_id || '-'}</td>
+                    <td>${lastCheck}</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            document.getElementById('table-info').textContent = `${data.length} catégories`;
+        }
+
+        // Scraping Controls
+        startScrapingUI() {
+            this.isScrapingActive = true;
+            document.getElementById('check-now-btn').disabled = true;
+            document.getElementById('initial-scrape-btn').disabled = true;
+            document.getElementById('scraping-state').textContent = 'Actif';
+            document.getElementById('progress-section').classList.add('active');
+        }
+
+        stopScrapingUI() {
+            this.isScrapingActive = false;
+            document.getElementById('check-now-btn').disabled = false;
+            document.getElementById('scraping-state').textContent = 'Inactif';
+            
+            setTimeout(() => {
+                document.getElementById('progress-section').classList.remove('active');
+            }, 2000);
+        }
+
+        showProgress(percent, message) {
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-percent').textContent = `${percent}%`;
+            document.getElementById('progress-message').textContent = message || 'En cours...';
+        }
+
+        updateProgress(percent, message) {
+            this.showProgress(percent, message);
+        }
+
+        async triggerScrape(isInitial = false) {
+            const url = isInitial ? '/api/scrape/initial' : '/api/scrape/trigger';
+            
+            try {
+                this.startScrapingUI();
+                const response = await fetch(url, { method: 'POST' });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Erreur serveur');
+                }
+                
+                this.showAlert('info', isInitial 
+                    ? 'Scraping initial démarré. Cela peut prendre plusieurs heures...'
+                    : 'Vérification des nouveautés démarrée.');
+            } catch (error) {
+                console.error('Scrape trigger error:', error);
+                this.stopScrapingUI();
+                this.showAlert('error', `Erreur: ${error.message}`);
+            }
+        }
+
+        // UI Utilities
+        showModal(title, message, onConfirm) {
+            const modal = document.getElementById('modal');
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').textContent = message;
+            
+            modal.classList.add('active');
+            
+            const confirmBtn = document.getElementById('modal-confirm');
+            const cancelBtn = document.getElementById('modal-cancel');
+            
+            const closeModal = () => {
+                modal.classList.remove('active');
+                confirmBtn.onclick = null;
+                cancelBtn.onclick = null;
+                modal.onclick = null;
+            };
+            
+            confirmBtn.onclick = () => {
+                closeModal();
+                onConfirm();
+            };
+            
+            cancelBtn.onclick = closeModal;
+            
+            modal.onclick = (e) => {
+                if (e.target === modal) closeModal();
+            };
+        }
+
+        showAlert(type, message) {
+            const container = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert-box alert-${type}`;
+            alert.innerHTML = `
+                <span>${type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️'}</span>
+                <span>${message}</span>
+            `;
+            container.appendChild(alert);
+            
+            setTimeout(() => alert.remove(), 5000);
+        }
+
+        escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        updateClock() {
+            // Update next check time periodically
+            this.loadStatistics();
+        }
+
+        // Event Listeners
+        attachEventListeners() {
+            // Control buttons
+            document.getElementById('check-now-btn').addEventListener('click', () => {
+                this.showModal(
+                    'Vérification Manuelle',
+                    'Lancer une vérification des nouveautés maintenant ?',
+                    () => this.triggerScrape(false)
+                );
+            });
+
+            document.getElementById('initial-scrape-btn').addEventListener('click', () => {
+                this.showModal(
+                    '⚠️ Scraping Initial Complet',
+                    'ATTENTION : Cette opération récupérera TOUS les torrents depuis le début. Cela peut prendre plusieurs heures. Voulez-vous vraiment continuer ?',
+                    () => this.triggerScrape(true)
+                );
+            });
+
+            document.getElementById('refresh-btn').addEventListener('click', async () => {
+                await this.loadStatistics();
+                this.showAlert('success', 'Statistiques rafraîchies');
+            });
+
+            // Table tabs
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    this.currentTable = e.target.dataset.table;
+                    this.loadTable(this.currentTable);
+                });
+            });
+        }
+    }
+
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+        window.scraperDashboard = new AnimeScraperDashboard();
+    });
+    </script>
+</body>
+</html>
