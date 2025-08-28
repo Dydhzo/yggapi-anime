@@ -44,8 +44,12 @@ class YggScraper:
         saved_count = 0
         updated_count = 0
         
+        logger.info(f"Début sauvegarde de {len(torrents)} torrents pour {category_type}")
+        
         for torrent_data in torrents:
             try:
+                logger.debug(f"Traitement du torrent {torrent_data.get('id')} - {torrent_data.get('title', 'Sans titre')[:50]}")
+                
                 # Vérifier si le torrent existe déjà
                 existing = db.query(Model).filter_by(id=torrent_data['id']).first()
                 
@@ -79,11 +83,14 @@ class YggScraper:
                     
             except Exception as e:
                 logger.error(f"Erreur lors de la sauvegarde du torrent {torrent_data.get('id')}: {e}")
+                logger.exception("Détails complets de l'erreur:")
                 continue
+        
+        logger.info(f"Tentative de commit pour {saved_count} nouveaux + {updated_count} mis à jour")
         
         try:
             db.commit()
-            logger.info(f"{saved_count} nouveaux torrents sauvegardés, {updated_count} torrents existants mis à jour pour {category_type}")
+            logger.info(f"✅ SUCCÈS: {saved_count} nouveaux torrents sauvegardés, {updated_count} torrents existants mis à jour pour {category_type}")
             
             # Envoyer une mise à jour temps réel via WebSocket
             if broadcast_updates and (saved_count > 0 or updated_count > 0):
