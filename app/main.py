@@ -37,6 +37,13 @@ logger = logging.getLogger(__name__)
 # Instance globale du scheduler
 scheduler = TorrentScheduler()
 
+# État global du scraping
+scraping_state = {
+    "is_active": False,
+    "current_operation": None,
+    "start_time": None
+}
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Gère le cycle de vie de l'application"""
@@ -135,7 +142,10 @@ async def api_info():
         "version": get_version(),
         "status": "running",
         "scheduler_active": scheduler.is_running,
-        "next_update": scheduler.get_next_run_time().isoformat() if scheduler.get_next_run_time() else None
+        "next_update": scheduler.get_next_run_time().isoformat() if scheduler.get_next_run_time() else None,
+        "scraping_active": scraping_state["is_active"],
+        "current_operation": scraping_state["current_operation"],
+        "scraping_start_time": scraping_state["start_time"].isoformat() if scraping_state["start_time"] else None
     }
 
 @app.get("/api/stats")
@@ -238,7 +248,16 @@ async def get_films(
 @app.post("/api/scrape/trigger")
 async def trigger_scrape():
     """Déclencher manuellement une mise à jour de scraping"""
+    # Vérifier si un scraping est déjà en cours
+    if scraping_state["is_active"]:
+        raise HTTPException(status_code=409, detail="Un scraping est déjà en cours")
+    
     try:
+        # Marquer le scraping comme actif
+        scraping_state["is_active"] = True
+        scraping_state["current_operation"] = "update_scrape"
+        scraping_state["start_time"] = datetime.now()
+        
         # Envoyer notification de début via WebSocket
         await manager.broadcast({
             "type": "scraping_started",
@@ -248,7 +267,7 @@ async def trigger_scrape():
         scraper = YggScraper()
         await scraper.update_scrape()
         
-        # Envoyer notification de fin
+        # Envoyer notification de fin avec refresh des stats
         await manager.broadcast({
             "type": "scraping_completed",
             "message": "Vérification terminée"
@@ -262,15 +281,29 @@ async def trigger_scrape():
             "message": f"Erreur: {str(e)}"
         })
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # Réinitialiser l'état
+        scraping_state["is_active"] = False
+        scraping_state["current_operation"] = None
+        scraping_state["start_time"] = None
 
 @app.post("/api/scrape/initial")
 async def trigger_initial_scrape():
     """Déclencher manuellement le scraping initial complet (utiliser avec prudence !)"""
+    # Vérifier si un scraping est déjà en cours
+    if scraping_state["is_active"]:
+        raise HTTPException(status_code=409, detail="Un scraping est déjà en cours")
+    
     try:
+        # Marquer le scraping comme actif
+        scraping_state["is_active"] = True
+        scraping_state["current_operation"] = "initial_scrape"
+        scraping_state["start_time"] = datetime.now()
+        
         # Envoyer notification de début via WebSocket
         await manager.broadcast({
             "type": "scraping_started",
-            "message": "Scraping initial en cours. Cela peut prendre plusieurs minutes..."
+            "message": "Scraping initial en cours. Cela peut prendre plusieurs heures..."
         })
         
         scraper = YggScraper()
@@ -281,7 +314,7 @@ async def trigger_initial_scrape():
             scheduler.start()
             logger.info("✅ Scheduler démarré - Vérifications automatiques toutes les heures")
         
-        # Envoyer notification de fin
+        # Envoyer notification de fin avec refresh des stats
         await manager.broadcast({
             "type": "scraping_completed",
             "message": "Scraping initial terminé - Vérifications automatiques activées"
@@ -295,6 +328,11 @@ async def trigger_initial_scrape():
             "message": f"Erreur: {str(e)}"
         })
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # Réinitialiser l'état
+        scraping_state["is_active"] = False
+        scraping_state["current_operation"] = None
+        scraping_state["start_time"] = None
 
 @app.get("/api/scraping-state")
 async def get_scraping_state(db: Session = Depends(get_db)):

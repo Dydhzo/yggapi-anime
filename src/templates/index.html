@@ -263,6 +263,7 @@
             this.connectWebSocket();
             this.attachEventListeners();
             await this.loadStatistics();
+            await this.checkScrapingState();
             this.loadTable('series');
             setInterval(() => this.updateClock(), 60000);
         }
@@ -322,7 +323,7 @@
                 case 'scraping_completed':
                     this.stopScrapingUI();
                     this.showAlert('success', 'Scraping terminé avec succès');
-                    this.loadStatistics();
+                    await this.loadStatistics();
                     break;
                 case 'stats_update':
                     this.updateStatistics(data.stats);
@@ -627,6 +628,22 @@
         updateClock() {
             // Update next check time periodically
             this.loadStatistics();
+        }
+
+        // Check scraping state on page load
+        async checkScrapingState() {
+            try {
+                const response = await fetch('/api/info');
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.scraping_active) {
+                        this.startScrapingUI();
+                        this.showAlert('info', `Scraping en cours: ${data.current_operation}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur lors de la vérification de l\'état du scraping:', error);
+            }
         }
 
         // Event Listeners
