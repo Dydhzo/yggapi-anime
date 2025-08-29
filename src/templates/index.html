@@ -323,7 +323,7 @@
                 case 'scraping_completed':
                     this.stopScrapingUI();
                     this.showAlert('success', 'Scraping terminé avec succès');
-                    await this.loadStatistics();
+                    this.loadStatistics();
                     break;
                 case 'stats_update':
                     this.updateStatistics(data.stats);
